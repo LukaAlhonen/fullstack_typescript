@@ -1,3 +1,8 @@
+interface BmiValues {
+  height: number;
+  weight: number;
+}
+
 type BMI =
   | "Underweight (Severe thinness)"
   | "Underweight (Moderate thinness)"
@@ -37,4 +42,20 @@ const calculateBmi = (height: number, weight: number): BMI => {
   }
 };
 
-console.log(calculateBmi(180, 74));
+const parseBmiArgs = (args: string[]): BmiValues => {
+  if (args.length < 4) throw new Error("Not enough args");
+  if (args.length > 4) throw new Error("Too many args");
+
+  if (!isNaN(Number(args[2])) && !isNaN(Number(args[3]))) {
+    return {
+      height: Number(args[2]),
+      weight: Number(args[3]),
+    };
+  } else {
+    throw new Error("Invalid args");
+  }
+};
+
+const { height, weight } = parseBmiArgs(process.argv);
+
+console.log(calculateBmi(height, weight));
