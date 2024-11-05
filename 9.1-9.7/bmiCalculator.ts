@@ -1,9 +1,9 @@
-interface BmiValues {
+export interface BmiValues {
   height: number;
   weight: number;
 }
 
-type BMI =
+export type BMI =
   | "Underweight (Severe thinness)"
   | "Underweight (Moderate thinness)"
   | "Underweight (Mild thinness)"
@@ -13,7 +13,7 @@ type BMI =
   | "Obese (Class II)"
   | "Obese (Class III)";
 
-const calculateBmi = (height: number, weight: number): BMI => {
+export const calculateBmi = (height: number, weight: number): BMI => {
   const bmi: number = weight / (height / 100) ** 2;
   switch (true) {
     case bmi < 16.0:
@@ -39,6 +39,8 @@ const calculateBmi = (height: number, weight: number): BMI => {
 
     case bmi >= 40.0:
       return "Obese (Class III)";
+    default:
+      throw new Error("Unable to calculate BMI: invalid parameters");
   }
 };
 
@@ -52,10 +54,19 @@ const parseBmiArgs = (args: string[]): BmiValues => {
       weight: Number(args[3]),
     };
   } else {
-    throw new Error("Invalid args");
+    throw new Error(`Invalid args [${args[2]}, ${args[3]}]`);
   }
 };
+if (require.main === module) {
+  try {
+    const { height, weight } = parseBmiArgs(process.argv);
+    console.log(calculateBmi(height, weight));
+  } catch (error: unknown) {
+    let errorMessage = "Something went wrong\n";
 
-const { height, weight } = parseBmiArgs(process.argv);
-
-console.log(calculateBmi(height, weight));
+    if (error instanceof Error) {
+      errorMessage += error.message;
+    }
+    console.error(errorMessage);
+  }
+}
