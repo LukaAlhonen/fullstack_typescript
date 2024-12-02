@@ -1,9 +1,9 @@
-export interface BmiValues {
+interface BmiValues {
   height: number;
   weight: number;
 }
 
-export type BMI =
+type BMI =
   | "Underweight (Severe thinness)"
   | "Underweight (Moderate thinness)"
   | "Underweight (Mild thinness)"

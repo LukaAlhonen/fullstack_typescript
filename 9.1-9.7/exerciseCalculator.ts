@@ -4,22 +4,24 @@ interface TrainingResult {
   success: boolean;
   rating: number;
   ratingDescription: string;
-  target: number;
   average: number;
 }
 
-interface ExerciseValues {
-  goal: number;
-  days: number[];
+export interface ExerciseValues {
+  daily_exercises: number[];
+  target: number;
 }
 
-const calculateExercises = (days: number[], goal: number): TrainingResult => {
-  const periodLength: number = days.length;
-  const trainingDays = days.reduce((count, exerciseHours) => {
+export const calculateExercises = (
+  daily_exercises: number[],
+  target: number,
+): TrainingResult => {
+  const periodLength: number = daily_exercises.length;
+  const trainingDays = daily_exercises.reduce((count, exerciseHours) => {
     return exerciseHours > 0 ? count + 1 : count;
   }, 0);
-  const average = days.reduce((sum, num) => sum + num, 0) / periodLength;
-  const target = goal;
+  const average =
+    daily_exercises.reduce((sum, num) => sum + num, 0) / periodLength;
   const success = average >= target ? true : false;
   const rating = success ? 3 : average / target > 0.6 ? 2 : 1;
   const ratingDescription =
@@ -35,7 +37,6 @@ const calculateExercises = (days: number[], goal: number): TrainingResult => {
     success,
     rating,
     ratingDescription,
-    target,
     average,
   };
 };
@@ -45,40 +46,39 @@ const parseExerciseArgs = (args: string[]): ExerciseValues => {
     throw new Error("Not enough args");
   }
 
-  const days: number[] = [];
+  const daily_exercises: number[] = [];
 
   if (isNaN(Number(args[2]))) {
     throw new Error(`Invalid arg: ${args[3]}`);
   }
 
-  const goal = Number(args[2]);
+  const target = Number(args[2]);
 
   args.slice(3).forEach((day) => {
     if (isNaN(Number(day))) throw new Error(`Invalid arg: ${day}`);
 
-    days.push(Number(day));
+    daily_exercises.push(Number(day));
   });
 
   return {
-    goal,
-    days,
+    daily_exercises,
+    target,
   };
 };
+if (require.main === module) {
+  try {
+    const { daily_exercises, target } = parseExerciseArgs(process.argv);
 
-try {
-  const { goal, days } = parseExerciseArgs(process.argv);
+    const {
+      periodLength,
+      trainingDays,
+      success,
+      rating,
+      ratingDescription,
+      average,
+    } = calculateExercises(daily_exercises, target);
 
-  const {
-    periodLength,
-    trainingDays,
-    success,
-    rating,
-    ratingDescription,
-    target,
-    average,
-  } = calculateExercises(days, goal);
-
-  console.log(`
+    console.log(`
   periodLength: ${periodLength}
   trainingDays: ${trainingDays}
   success: ${success}
@@ -87,14 +87,15 @@ try {
   target: ${target}
   average ${average}
   `);
-} catch (error: unknown) {
-  let errorMessage = "Something went wrong\n";
+  } catch (error: unknown) {
+    let errorMessage = "Something went wrong\n";
 
-  if (error instanceof Error) {
-    errorMessage += error.message;
+    if (error instanceof Error) {
+      errorMessage += error.message;
+    }
+
+    console.error(
+      `${errorMessage}\nUsage: <daily goal> <hours of exercise per day>`,
+    );
   }
-
-  console.error(
-    `${errorMessage}\nUsage: <daily goal> <hours of exercise per day>`,
-  );
 }
